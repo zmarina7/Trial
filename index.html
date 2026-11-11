@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7B10C4">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="Trans.png">
+<title>Commercial Bank Of Ethiopia</title>
+<style>
+  :root { --purple:#7B10C4; --gold:#a8893f; --muted:#778; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-tap-highlight-color:transparent; }
+  body { background:#d9d9de; display:flex; justify-content:center; min-height:100vh; }
+  .phone { width:100%; max-width:420px; min-height:100vh; background:#fff; position:relative; }
+  .phone.fit { max-width:none; min-height:0; margin:0 auto; overflow:hidden; }
+  .hidden, .hid { display:none !important; }
+  .screen { min-height:100vh; min-height:100dvh; position:relative; background:linear-gradient(180deg,#f4f8fa,#e3edf0); display:flex; flex-direction:column; }
+  .circ { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; border:none; color:inherit; font-size:18px; cursor:pointer; flex:none; }
+  .circ.l { background:#eef2f4; color:#555; }
+  .pill { padding:10px 18px; border-radius:24px; background:rgba(255,255,255,.2); font-weight:600; font-size:14px; color:#fff; }
+  .link { background:none; border:none; font-size:15px; font-weight:600; color:#4a3aa8; cursor:pointer; padding:10px; }
+  .toast { position:fixed; left:50%; bottom:110px; transform:translateX(-50%); background:#222; color:#fff; padding:10px 18px; border-radius:20px; font-size:14px; z-index:90; opacity:0; transition:opacity .25s; pointer-events:none; max-width:90%; text-align:center; }
+  .toast.on { opacity:.95; }
+  .err { color:#c0262d; font-size:13px; margin-top:8px; min-height:18px; text-align:center; }
+  .btn { width:100%; padding:15px; border:none; border-radius:30px; background:var(--purple); color:#fff; font-size:17px; font-weight:600; margin-top:16px; cursor:pointer; }
+
+  /* lock */
+  .lockTop { display:flex; justify-content:space-between; align-items:center; padding:18px 16px; }
+  .lockTop .pill { background:#eef2f4; color:#555; }
+  .lockMid { flex:1; text-align:center; padding-top:20px; }
+  .logoMark { width:112px; height:112px; border-radius:50%; margin:0 auto; background:transparent; display:flex; align-items:center; justify-content:center; color:var(--purple); font-size:40px; font-weight:800; box-shadow:none; }
+  .bankNameAm { color: var(--gold); font-family: "Noto Sans Ethiopic", "Abyssinica SIL", Nyala, sans-serif; font-size: 17px; font-weight: 700; margin-top: 20px; letter-spacing: 1px; }
+  .bankName { letter-spacing:2.5px; font-weight:600; color:#44505a; margin-top:26px; font-size:16px; }
+  .rule { width:130px; height:1px; background:#cfd9dd; margin:20px auto 0; }
+  .welcome { font-size:21px; color:#59686e; margin:34px 0 30px; }
+  .pinField { margin:0 26px; background:#eef3f5; border-radius:18px; padding:18px; display:flex; align-items:center; gap:14px; text-align:left; border:1.5px solid transparent; cursor:text; }
+  .pinField.act { border-color:#7a52b8; }
+  #pinTxt { font-size:22px; color:#333; letter-spacing:3px; min-height:26px; display:flex; align-items:center; }
+  #pinTxt .ph { font-size:17px; color:#6b7f9a; letter-spacing:0; }
+  .caret { display:inline-block; width:2px; height:24px; background:#7a52b8; margin-left:2px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink { 50%{opacity:0} }
+  .pinField.shake { animation:shake .35s; }
+  @keyframes shake { 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+  .lockBot { text-align:center; padding:0 22px 20px; }
+  .fp { width:74px; height:74px; border-radius:50%; background:var(--purple); border:none; box-shadow:0 0 0 7px rgba(123,16,196,.12); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+  .fp svg { width:40px; height:40px; fill:#fff; }
+  .small { letter-spacing:2.5px; font-size:12px; color:#445; font-weight:700; margin:16px 0 56px; }
+  .gold { width:100%; padding:17px; border:none; border-radius:30px; background:linear-gradient(#b99a55,#a8893f); color:#fff; font-size:18px; font-weight:600; cursor:pointer; }
+  .foot { font-size:13px; color:#889; margin-top:24px; }
+  .lockOpen .lockBot { display:none; }
+  .kp { position:absolute; left:0; right:0; bottom:0; background:#f0f4f6; border-radius:28px 28px 0 0; padding:12px 14px 16px; z-index:10; transform:translateY(105%); transition:transform .25s; box-shadow:0 -4px 18px rgba(0,0,0,.08); }
+  .kp.on { transform:none; }
+  .grab { width:46px; height:5px; border-radius:3px; background:#cfd8dc; margin:0 auto 12px; }
+  .kg { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .kg button { height:64px; border-radius:18px; border:none; background:#dde7eb; font-size:24px; color:#2a3a44; cursor:pointer; }
+  .kg button:active { background:#cbd9df; }
+  .kg button[data-k=x] { color:#c0505a; font-size:22px; }
+  .kg button[data-k=v] { color:#aab; background:#e6edf0; font-size:26px; }
+  .kg button.rdy { background:var(--purple); color:#fff; }
+  .sheet { position:absolute; inset:0; background:#fff; z-index:20; display:flex; flex-direction:column; align-items:center; padding:60px 26px 20px; text-align:center; }
+  .sheet h2 { font-size:22px; color:#333; }
+  .sheet p { color:#778; font-size:14px; margin:8px 0 14px; }
+  .sheet input, .msheet input[type=text], .msheet input[type=password], .msheet select { width:100%; padding:14px; border:1.5px solid #ddd; border-radius:12px; font-size:16px; outline:none; margin-top:12px; background:#fff; }
+  .sheet input:focus, .msheet input:focus { border-color:var(--purple); }
+
+  /* header + card */
+  .hHead { background:var(--purple); color:#fff; padding:16px 16px 150px; display:flex; align-items:center; gap:10px; }
+  .hello { flex:1; font-size:14px; opacity:.9; line-height:1.2; }
+  .hello b { display:block; font-size:20px; }
+  .acctCard { margin:-130px 16px 0; background:linear-gradient(135deg,#1c1c24,#2d2540); color:#fff; border-radius:26px; padding:18px 20px; position:relative; z-index:2; }
+  .cardTop { display:flex; gap:12px; align-items:center; }
+  .mini { width:40px; height:40px; border-radius:50%; background:#d9a93a; color:#222; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .cardTop b { display:block; color:#f2d46b; font-size:17px; }
+  .cardTop span { color:#f2d46b; font-size:12.5px; }
+  .bal { text-align:center; font-size:28px; font-weight:700; margin:18px 0 12px; letter-spacing:2px; }
+  .bal em { font-style:normal; font-size:14px; margin-left:4px; }
+  .bal button { background:none; border:none; color:#ccc; font-size:20px; margin-left:18px; cursor:pointer; }
+  .acLine { color:#f2d46b; font-family:monospace; font-size:14px; }
+  .dt { text-align:center; font-size:12px; color:#aab; margin-top:10px; }
+  .handle { width:46px; height:7px; border-radius:4px; background:#d9b955; margin:16px auto; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 14px 150px; }
+  .tile { background:rgba(255,255,255,.7); border-radius:20px; padding:16px 10px; min-height:92px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color:#3a2a9c; font-weight:600; font-size:16px; border:none; cursor:pointer; gap:6px; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+  .tile small { display:block; color:#889; font-weight:400; font-size:13px; }
+  .tile .ic { font-size:24px; }
+  .nav { position:sticky; bottom:0; margin-top:auto; background:#fff; display:flex; justify-content:space-around; padding:10px 0 12px; border-top:1px solid #eee; z-index:25; }
+  .nav button { background:none; border:none; color:#5a3aa8; font-size:12px; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; padding:6px 18px; border-radius:20px; }
+  .nav button.on { background:#eee9d8; }
+  .nav button span { font-size:20px; }
+
+  .quick { display:flex; justify-content:space-between; align-items:flex-start; padding:0 12px; margin-bottom:14px; }
+  .quick > div { text-align:center; width:76px; cursor:pointer; }
+  .qc { width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.8); margin:0 auto 8px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  .quick em { font-style:normal; font-size:13px; color:#3a3a8c; font-weight:500; line-height:1.25; display:block; }
+  .qmore { width:34px; height:34px; border-radius:50%; border:none; background:rgba(255,255,255,.85); color:#667; font-size:20px; margin-top:18px; cursor:pointer; flex:none; }
+  .tile.big { flex-direction:row; justify-content:flex-start; text-align:left; gap:12px; padding:18px 14px; }
+  .tile.big b { display:block; color:#2b2b7c; font-size:17px; font-weight:700; }
+  .bi { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; flex:none; font-weight:700; }
+  .bi.pink { background:#f6e1e1; color:#d8453f; } .bi.green { background:#dcf0e3; color:#2aa05c; }
+  .scanQR { position:fixed; bottom:78px; left:50%; transform:translateX(-50%); background:linear-gradient(#7a22c9,#5b0fa6); color:#fff; border:none; border-radius:28px; padding:13px 30px; font-size:16px; font-weight:700; z-index:30; cursor:pointer; box-shadow:0 4px 14px rgba(91,15,166,.45); letter-spacing:.2px; }
+  .scanQR i { position:absolute; width:11px; height:11px; border:2px solid rgba(255,255,255,.85); }
+  .scanQR i:nth-child(1) { top:6px; left:12px; border-right:0; border-bottom:0; border-radius:6px 0 0 0; }
+  .scanQR i:nth-child(2) { top:6px; right:12px; border-left:0; border-bottom:0; border-radius:0 6px 0 0; }
+  .scanQR i:nth-child(3) { bottom:6px; left:12px; border-right:0; border-top:0; border-radius:0 0 0 6px; }
+  .scanQR i:nth-child(4) { bottom:6px; right:12px; border-left:0; border-top:0; border-radius:0 0 6px 0; }
+  .cp { background:none; border:none; color:#f2d46b; margin-left:10px; cursor:pointer; vertical-align:middle; padding:2px; }
+  .logoMark img, .mini img, .logo img { width:100%; height:100%; border-radius:50%; object-fit:contain; background:transparent; }
+  .dh { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#44506f; margin:16px 6px 8px; letter-spacing:.5px; }
+  .dh em { font-style:normal; color:#889; font-weight:600; }
+  .scanner { position:fixed; inset:0; background:#000; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:flex-end; padding:20px; }
+  .scanner.on { display:flex; }
+  .scanner video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .sf { position:absolute; top:50%; left:50%; width:240px; height:240px; transform:translate(-50%,-50%); border:3px solid #fff; border-radius:24px; box-shadow:0 0 0 9999px rgba(0,0,0,.5); }
+  #scanMsg { position:relative; color:#fff; margin-bottom:14px; text-align:center; }
+  .scanner .btn { position:relative; max-width:320px; background:#fff; color:#4a1a8a; }
+
+  /* transfer */
+  .tHead { background:var(--purple); color:#fff; padding:16px 16px 40px; display:flex; align-items:center; gap:18px; font-size:24px; font-weight:700; }
+  .tBody { background:#f6fafb; border-radius:28px 28px 0 0; margin-top:-22px; padding:18px 14px 30px; flex:1; position:relative; }
+  .from { background:linear-gradient(135deg,#1c1c24,#2d2540); color:#fff; border-radius:20px; padding:16px 18px; line-height:1.7; }
+  .from div:first-child { font-weight:600; color:#f2d46b; }
+  #fromAc { color:#f2d46b; font-size:15px; }
+  #fromBal { color:#f2d46b; font-size:18px; display:flex; align-items:center; justify-content:flex-start; gap:8px; }
+  .from .eyeToggle { background:none; border:none; color:#f2d46b; cursor:pointer; font-size:18px; padding:0; }
+  .nmLine { font-size:13px; color:#778; margin:14px 6px 0; }
+  .nmLine b { color:#222; margin-left:8px; }
+  .nmLine.bad { color:#c0262d; }
+  .field { display:flex; align-items:center; gap:12px; background:#fff; border-radius:18px; padding:2px 16px; margin-top:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .field > span { font-size:22px; color:#555; display:flex; align-items:center; justify-content:center; width:22px; }
+  .field svg { width:21px; height:21px; stroke:#7d7d8a; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .field input { flex:1; border:none; background:none; padding:16px 0; font-size:17px; outline:none; min-width:0; }
+  .field button { background:none; border:none; font-size:22px; color:#667; cursor:pointer; }
+  .remark { display:flex; align-items:center; gap:10px; margin:16px 4px; font-size:15px; }
+  .remark input { border:none; border-bottom:1px solid #ccc; background:none; font-size:14px; padding:4px; flex:1; outline:none; min-width:0; }
+  .tab { display:flex; justify-content:space-around; margin-top:22px; border-bottom:1px solid #e3e8ea; }
+  .tab button { background:none; border:none; padding:10px 6px; font-size:16px; color:#4a3aa8; font-weight:600; cursor:pointer; border-bottom:3px solid transparent; }
+  .tab button.on { border-bottom-color:#5a3aa8; }
+  .ct { display:flex; align-items:center; gap:14px; padding:13px 4px; border-bottom:1px solid #eef1f2; cursor:pointer; }
+  .ct i { font-style:normal; width:48px; height:48px; border-radius:50%; background:#ece8f3; color:#4a3aa8; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; }
+  .ct div { flex:1; font-size:16px; font-weight:600; color:#333; }
+  .ct small { display:block; color:#889; font-weight:400; font-size:14px; margin-top:3px; }
+  .ct b { color:#667; font-size:18px; }
+  .ct u { text-decoration:none; font-size:18px; padding:6px; color:#889; }
+  .proc { position:fixed; inset:0; background:rgba(255,255,255,.85); z-index:95; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; color:var(--purple); font-weight:600; }
+  .proc::before { content:""; width:46px; height:46px; border-radius:50%; border:5px solid #e3d3f4; border-top-color:var(--purple); animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* transactions */
+  .txTabs { display:flex; align-items:center; justify-content:space-around; margin-top:18px; padding:0 10px; }
+  .txTabs button { background:none; border:none; font-size:16px; font-weight:600; color:#4a3aa8; padding:10px 14px; border-bottom:3px solid transparent; cursor:pointer; }
+  .txTabs button.on { border-bottom-color:#5a3aa8; }
+  .txQ { margin:6px 16px; padding:12px 14px; border:1.5px solid #ddd; border-radius:14px; font-size:15px; outline:none; }
+  #txList { padding:6px 14px 130px; }
+  .tx { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.75); border-radius:18px; padding:14px; margin-bottom:10px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,.04); }
+  .ti { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; flex:none; }
+  .ti.debit { background:#fbe9ea; color:#d4373f; } .ti.credit { background:#e4f5ea; color:#23995a; }
+  .tm { flex:1; min-width:0; } .tm b { display:block; font-size:15px; color:#222; } .tm small { color:#889; font-size:12px; }
+  .ta { text-align:right; } .ta b { display:block; font-size:15px; } .ta.debit b { color:#d4373f; } .ta.credit b { color:#23995a; }
+  .ta em { font-style:normal; font-size:10px; background:#e8ecf4; color:#556; padding:3px 7px; border-radius:6px; display:inline-block; margin-top:5px; letter-spacing:.3px; }
+  .none { text-align:center; color:#889; margin-top:30px; }
+
+  /* modal / sheet */
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:80; display:none; align-items:flex-end; justify-content:center; }
+  .modal.on { display:flex; }
+  .msheet { width:100%; max-width:420px; background:#fff; border-radius:28px 28px 0 0; padding:22px 22px 26px; max-height:92vh; overflow:auto; text-align:center; }
+  .msheet h3 { font-size:17px; color:#2a3a4a; margin-bottom:4px; }
+  .msheet p { font-size:14px; color:#667; margin:6px 0; line-height:1.5; text-align:left; }
+  .fl { display:block; font-size:13px; color:#778; margin:12px 0 -4px; text-align:left; }
+  .chk { display:flex; align-items:center; gap:12px; text-align:left; margin:16px 0 4px; font-size:16px; }
+  .chk input { width:22px; height:22px; accent-color:var(--purple); }
+  .mh { display:flex; justify-content:space-between; align-items:center; font-size:12px; letter-spacing:1.5px; color:#44505a; font-weight:700; }
+  .chip { display:inline-block; background:#e1f3e7; color:#1d7a47; font-weight:600; font-size:14px; padding:7px 16px; border-radius:20px; margin:18px 0 12px; }
+  .big { font-size:28px; font-weight:800; color:#1f2a3a; }
+  .sub { color:#667; font-size:14px; margin:6px 0 18px; }
+  .row { display:flex; justify-content:space-between; gap:12px; padding:14px 2px; font-size:14px; color:#667; text-align:left; }
+  .row b { color:#222; text-align:right; word-break:break-all; }
+  .row button { background:none; border:none; margin-left:6px; color:#889; cursor:pointer; }
+
+  /* settings */
+  .sHead { background:var(--purple); color:#fff; padding:16px; display:flex; align-items:center; gap:16px; font-size:22px; font-weight:700; }
+  .sBody { padding:14px 14px 130px; }
+  .sTitle { font-size:12px; letter-spacing:1.5px; color:#44506f; font-weight:700; margin:20px 8px 10px; }
+  .sGroup { background:rgba(255,255,255,.75); border-radius:20px; padding:4px 8px; }
+  .srow { display:flex; align-items:center; gap:14px; padding:14px 8px; cursor:pointer; }
+  .si { width:42px; height:42px; border-radius:14px; background:#ece8f3; display:flex; align-items:center; justify-content:center; font-size:19px; flex:none; }
+  .srow div { flex:1; font-weight:600; color:#222; font-size:16px; } .srow small { display:block; color:#99a; font-weight:400; font-size:13px; margin-top:2px; }
+  .srow b { color:#99a; }
+  .ver { text-align:center; color:#889; font-size:13px; margin-top:28px; } .ver a { color:#223; font-weight:700; margin:0 8px; cursor:pointer; }
+
+  /* ---------- Receipt (laid out on the 688 x 1530 grid of the reference image; 1u = scaled px) ---------- */
+  #receiptScreen { position:absolute; inset:0; background:#fff; overflow:hidden; font-family:Roboto,system-ui,-apple-system,"Segoe UI",sans-serif; color:#111; }
+  #receiptScreen * { font-family:inherit; }
+  .abs { position:absolute; }
+  .u { --k:var(--u); }
+  .top { position:absolute; left:0; top:0; width:100%; height:calc(var(--u)*340); background:var(--purple); overflow:hidden; }
+  .top .curve { position:absolute; left:0; width:100%; top:calc(var(--u)*226); height:calc(var(--u)*200); background:#fff; border-radius:calc(var(--u)*56) calc(var(--u)*56) 0 0; }
+  .shield { position:absolute; left:calc(var(--u)*12); top:calc(var(--u)*78); width:calc(var(--u)*50); height:calc(var(--u)*58); }
+  .thank { position:absolute; left:calc(var(--u)*82); top:calc(var(--u)*68); color:#fff; font-size:calc(var(--u)*36); font-weight:700; line-height:1.15; }
+  .succ { position:absolute; left:calc(var(--u)*82); top:calc(var(--u)*118); color:rgba(255,255,255,.8); font-size:calc(var(--u)*23); }
+  .ring { position:absolute; left:calc(50% - var(--u)*95); top:calc(var(--u)*133); width:calc(var(--u)*190); height:calc(var(--u)*190); border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; }
+  .ring .inner { width:calc(var(--u)*166); height:calc(var(--u)*166); border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; animation:pulse 2.4s ease-in-out infinite; }
+  .ring svg { width:calc(var(--u)*112); height:calc(var(--u)*92); }
+  @keyframes pulse { 0%,100%{ transform:scale(1);} 50%{ transform:scale(1.12);} }
+  @media (prefers-reduced-motion:reduce){ .ring .inner{ animation:none; } }
+
+  .done { position:absolute; left:0; width:100%; top:calc(var(--u)*326); text-align:center; font-size:calc(var(--u)*27); line-height:calc(var(--u)*36); }
+  .card { position:absolute; left:calc(var(--u)*12); top:calc(var(--u)*395); width:calc(var(--u)*656); height:calc(var(--u)*917);
+          background:#eceeef; border-radius:calc(var(--u)*28); box-shadow:0 calc(var(--u)*3) calc(var(--u)*9) rgba(0,0,0,.28); overflow:hidden; }
+  .card h4 { position:absolute; left:calc(var(--u)*31); right:calc(var(--u)*31); top:calc(var(--u)*24); height:calc(var(--u)*49);
+             font-weight:400; color:#777; font-size:calc(var(--u)*26); border-bottom:1px solid #dcdcdc; }
+  #summary { position:absolute; left:calc(var(--u)*31); right:calc(var(--u)*26); top:calc(var(--u)*81); font-size:calc(var(--u)*30); line-height:calc(var(--u)*47.5); }
+  .qr { position:absolute; left:calc(var(--u)*201); top:calc(var(--u)*510); width:calc(var(--u)*260); height:calc(var(--u)*275);
+        border:calc(var(--u)*4) solid #999; border-radius:calc(var(--u)*22); background:#fff; padding:calc(var(--u)*14); }
+  .brand { position:absolute; left:calc(var(--u)*46); top:calc(var(--u)*800); display:flex; align-items:center; gap:calc(var(--u)*28); }
+  .logo { width:calc(var(--u)*72); height:calc(var(--u)*72); border-radius:50%; background:var(--purple); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:calc(var(--u)*28); }
+  .brand b { display:block; font-size:calc(var(--u)*29); font-weight:600; line-height:calc(var(--u)*38); }
+  .brand span { color:#777; font-size:calc(var(--u)*26); line-height:calc(var(--u)*36); display:block; }
+
+  .act { position:absolute; top:calc(var(--u)*1330); height:calc(var(--u)*56); background:none; border:none; display:flex; align-items:center; gap:calc(var(--u)*10); font-size:calc(var(--u)*26); color:#111; cursor:pointer; }
+  .act svg { width:calc(var(--u)*40); height:calc(var(--u)*40); }
+  .close { position:absolute; left:calc(var(--u)*12); top:calc(var(--u)*1400); width:calc(var(--u)*664); height:calc(var(--u)*88);
+           border-radius:calc(var(--u)*44); border:calc(var(--u)*2) solid #9a9a9a; background:#ececec; color:#777; font-size:calc(var(--u)*36); font-weight:600; cursor:pointer; }
+
+  /* ---------- PAID stamp: solid purple, no inner border ---------- */
+  .stamp { position:absolute; left:50%; top:52%; z-index:10; pointer-events:none; opacity:0;
+           background:var(--purple); color:#fff; box-shadow:0 calc(var(--u)*10) calc(var(--u)*30) rgba(0,0,0,.35);
+           padding:calc(var(--u)*8) calc(var(--u)*56); font-size:calc(var(--u)*110); font-weight:900; letter-spacing:calc(var(--u)*12); border-radius:calc(var(--u)*10);
+           transform:translate(-50%,-50%) rotate(-14deg) scale(3); }
+  .stamp.show { animation:stampIn 1.8s ease-out forwards; }
+  @keyframes stampIn {
+    0%   { opacity:0; transform:translate(-50%,-50%) rotate(-14deg) scale(3); }
+    15%  { opacity:1; transform:translate(-50%,-50%) rotate(-14deg) scale(1); }
+    75%  { opacity:1; transform:translate(-50%,-50%) rotate(-14deg) scale(1); }
+    100% { opacity:0; transform:translate(-50%,-50%) rotate(-14deg) scale(1); }
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- LOCK -->
+  <section id="lockScreen" class="screen">
+    <div class="lockTop"><button class="circ l" data-toast type="button">&#128276;</button><div class="pill js-lang">English &#9662;</div><button class="circ l" data-toast type="button">&#9638;</button></div>
+    <div class="lockMid"><div class="logoMark" data-b="logo">DB</div><div class="bankNameAm">የኢትዮጵያ ንግድ ባንክ</div><div class="bankName" data-b="nameUp">DEMO BANK</div><div class="rule"></div><div class="welcome" data-i="welcome">Welcome back</div>
+      <div class="pinField" id="pinField"><svg width="22" height="22" viewBox="0 0 24 24" fill="#a8893f"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3z"/></svg><div id="pinTxt"></div></div>
+      <div class="err" id="pinErr"></div></div>
+    <div class="lockBot">
+      <button class="fp" id="bioBtn" type="button" aria-label="Use biometrics"><svg viewBox="0 0 24 24"><path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.23-1.05-2.73-1.05-4.34 0-2.97 2.54-5.39 5.66-5.39s5.66 2.42 5.66 5.39c0 .28-.22.5-.5.5s-.5-.22-.5-.5c0-2.42-2.09-4.39-4.66-4.39-2.57 0-4.66 1.97-4.66 4.39 0 1.44.32 2.77.93 3.85.64 1.15 1.08 1.64 1.85 2.42.19.2.19.51 0 .71-.11.1-.24.15-.37.15zm7.17-1.85c-1.19 0-2.24-.3-3.1-.89-1.49-1.01-2.38-2.65-2.38-4.39 0-.28.22-.5.5-.5s.5.22.5.5c0 1.41.72 2.74 1.94 3.56.71.48 1.54.71 2.54.71.24 0 .64-.03 1.04-.1.27-.05.53.13.58.41.05.27-.13.53-.41.58-.57.11-1.07.12-1.21.12zM14.91 22c-.04 0-.09-.01-.13-.02-1.59-.44-2.63-1.03-3.72-2.1-1.4-1.39-2.17-3.24-2.17-5.22 0-1.62 1.38-2.94 3.08-2.94 1.7 0 3.08 1.32 3.08 2.94 0 1.07.93 1.94 2.08 1.94s2.08-.87 2.08-1.94c0-3.77-3.25-6.83-7.25-6.83-2.84 0-5.44 1.58-6.61 4.03-.39.81-.59 1.76-.59 2.8 0 .78.07 2.01.67 3.61.1.26-.03.55-.29.64-.26.1-.55-.04-.64-.29-.49-1.31-.73-2.61-.73-3.96 0-1.2.23-2.29.68-3.24 1.33-2.79 4.28-4.6 7.51-4.6 4.55 0 8.25 3.51 8.25 7.83 0 1.62-1.38 2.94-3.08 2.94s-3.08-1.32-3.08-2.94c0-1.07-.93-1.94-2.08-1.94s-2.08.87-2.08 1.94c0 1.71.66 3.31 1.87 4.51.95.94 1.86 1.46 3.27 1.85.27.07.42.35.35.61-.05.23-.26.38-.47.38z"/></svg></button>
+      <div class="small">USE BIOMETRICS</div>
+      <button class="gold" id="loginBtn" type="button">Login &#8594;</button>
+      <button class="link" id="forgot" type="button">Forgot PIN?</button>
+      <div class="foot" data-b="foot"></div>
+    </div>
+    <div class="kp" id="kp"><div class="grab"></div><div class="kg" id="kg"></div></div>
+    <div class="sheet hidden" id="setupSheet"><h2>Welcome to <span data-b="name">Demo Bank</span></h2><p>Create your demo profile</p>
+      <input id="setupName" placeholder="Account holder name" autocomplete="off">
+      <input id="setupPin" type="password" inputmode="numeric" maxlength="4" placeholder="Create a 4-digit PIN" autocomplete="off">
+      <input id="setupPin2" type="password" inputmode="numeric" maxlength="4" placeholder="Confirm PIN" autocomplete="off">
+      <div class="err" id="setupErr"></div><button class="btn" id="setupBtn" type="button">Create profile</button></div>
+  </section>
+
+  <!-- HOME -->
+  <section id="homeScreen" class="screen hidden">
+    <div class="hHead"><button class="circ" data-toast type="button">&#9638;</button><div class="hello"><span data-i="hello">Hello,</span><b class="js-name"></b></div><div class="pill js-lang">English &#9662;</div><button class="circ" data-toast type="button">&#10227;</button></div>
+    <div class="cardSlot"></div><div class="handle"></div>
+    <div class="quick"><div data-go="txScreen"><span class="qc"><svg viewBox="0 0 24 24" width="27" height="27" fill="#6a2fb8"><path d="M5 2h14v20l-2.3-1.6L14.3 22 12 20.4 9.7 22l-2.4-1.6L5 22V2zm3 5v2h8V7H8zm0 4v2h8v-2H8zm0 4v2h8v-2H8z"/></svg></span><em>Mini Statement</em></div><div data-toast><span class="qc"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#6a2fb8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M15 3h5v5"/><path d="M20 3l-5 5"/><text x="12" y="16" font-size="10" font-weight="700" text-anchor="middle" fill="#6a2fb8" stroke="none">$</text></svg></span><em>Cash Out</em></div><div data-toast><span class="qc"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#6a2fb8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><path d="M12 13L6.5 6.5"/><path d="M12 13l5.5-6.5"/><path d="M6.5 6.5V11M6.5 6.5H11"/><path d="M17.5 6.5V11M17.5 6.5H13"/></svg></span><em>Bill Share</em></div><div data-toast><span class="qc"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#6a2fb8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><em>Cards</em></div><button class="qmore" data-toast type="button">&#8250;</button></div>
+    <div class="tiles">
+      <button class="tile big" id="goTransfer" type="button"><span class="bi pink">&#8599;</span><div><b data-i="transfer">Transfer</b><small>Send Money</small></div></button>
+      <button class="tile big" id="goReceive" type="button"><span class="bi green">&#8601;</span><div><b>Receive</b><small>Get Paid</small></div></button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128222;</span>Airtime</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#8646;</span>Other Transfers</button>
+      <button class="tile" data-toast type="button"><span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="#6a2fb8"><path d="M3 6a3 3 0 0 1 3-3h12v3H6a1 1 0 0 0 0 2h14a1 1 0 0 1 1 1v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6zm14 8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg></span>Demo Birr</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#129534;</span>Bills &amp; Utilities</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#127963;</span>Banking</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#127970;</span>Government Services</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#127978;</span>Pay to Merchant</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128652;</span>Travel</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128722;</span>Shopping</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#127902;</span>Entertainment</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128181;</span>Pay for</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128209;</span>Tax Payment</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128674;</span>Shipping &amp; Logistics</button>
+      <button class="tile" data-toast type="button"><span class="ic">&#128176;</span>Fast Loan</button>
+    </div>
+    <button class="scanQR" id="scanBtn" type="button"><i></i><i></i><i></i><i></i>Scan QR</button>
+    <div class="navSlot" data-a="h"></div>
+  </section>
+
+  <!-- TRANSACTIONS -->
+  <section id="txScreen" class="screen hidden">
+    <div class="hHead"><button class="circ" data-toast type="button">&#9638;</button><div class="hello"><span data-i="hello">Hello,</span><b class="js-name"></b></div><div class="pill js-lang">English &#9662;</div><button class="circ" data-toast type="button">&#10227;</button></div>
+    <div class="cardSlot"></div>
+    <div class="txTabs"><button data-tab="all" class="on" type="button">All</button><button data-tab="debit" type="button">Debited</button><button data-tab="credit" type="button">Credited</button><button id="txSearchBtn" type="button">&#128269;</button></div>
+    <input class="txQ hid" id="txQ" placeholder="Search by name" autocomplete="off">
+    <div id="txList"></div>
+    <div class="navSlot" data-a="t"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settingsScreen" class="screen hidden">
+    <div class="sHead"><button class="circ" data-go="homeScreen" type="button">&#10094;</button><span data-i="settings">Settings</span></div>
+    <div class="sBody">
+      <div class="sTitle">PREFERENCES</div><div class="sGroup">
+        <div class="srow" data-act="lang"><span class="si">&#127760;</span><div>Language<small id="langSub">English</small></div><b>&#10095;</b></div>
+        <div class="srow" data-act="acct"><span class="si">&#128100;</span><div>Account Preferences</div><b>&#10095;</b></div>
+        <div class="srow" data-act="notif"><span class="si">&#128276;</span><div>Notification Preferences</div><b>&#10095;</b></div>
+        <div class="srow" data-act="serv"><span class="si">&#9881;</span><div>Service Preferences</div><b>&#10095;</b></div></div>
+      <div class="sTitle">SECURITY SETTINGS</div><div class="sGroup">
+        <div class="srow" data-act="bio"><span class="si">&#128400;</span><div>Biometric Login<small id="bioSub"></small></div><b>&#10095;</b></div>
+        <div class="srow" data-act="pin"><span class="si">&#128273;</span><div>Change PIN</div><b>&#10095;</b></div>
+        <div class="srow" data-act="pass"><span class="si">&#128274;</span><div>Change Passphrase</div><b>&#10095;</b></div></div>
+      <div class="sTitle">BALANCE</div><div class="sGroup"><div class="srow" data-act="topup"><span class="si">&#10133;</span><div>Top up balance<small id="topSub"></small></div><b>&#10095;</b></div></div>
+      <div class="sTitle">ACCOUNT ACTIONS</div><div class="sGroup"><div class="srow" data-act="out"><span class="si">&#10145;</span><div>Log out</div><b>&#10095;</b></div></div>
+      <div class="ver">Version: 1.0.0<br><br><a data-act="priv">Privacy Policy</a>&middot;<a data-act="terms">Terms and Tariffs</a></div>
+    </div>
+    <div class="navSlot" data-a="s"></div>
+  </section>
+
+  <!-- TRANSFER -->
+  <section id="transferScreen" class="screen hidden">
+    <div class="tHead"><button class="circ" id="backHome" type="button" aria-label="Back">&#10094;</button><span data-i="transfer">CBE Transfer</span></div>
+    <form class="tBody" id="form" novalidate>
+      <div class="from">
+        <div>From Account</div>
+        <div id="fromAc"></div>
+        <div id="fromBal"></div>
+      </div>
+
+      <div class="nmLine hid" id="nmLine"></div>
+
+      <div class="field">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h13A2.5 2.5 0 0 1 21 8.5V17a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V8.5z"></path>
+            <path d="M3 9.5h18"></path>
+            <path d="M7 15h3"></path>
+          </svg>
+        </span>
+        <input id="racct" inputmode="numeric" maxlength="13" placeholder="Receiver account number" autocomplete="off">
+        <button type="button" id="addAcct" aria-label="Save account">&#128100;</button>
+      </div>
+
+      <div class="field">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5v7A2.5 2.5 0 0 1 17.5 18h-11A2.5 2.5 0 0 1 4 15.5v-7z"></path>
+            <path d="M4 10h16"></path>
+            <path d="M8 14h8"></path>
+          </svg>
+        </span>
+        <input id="amount" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="Amount*">
+        <button type="button" aria-label="Amount icon" style="opacity:.6;">
+          <svg viewBox="0 0 24 24" width="20" height="20" style="stroke:#6b6b7a; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;">
+            <path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9A2.5 2.5 0 0 1 16.5 19h-9A2.5 2.5 0 0 1 5 16.5v-9z"></path>
+            <path d="M8 10h8"></path>
+            <path d="M8 14h8"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="remark"><span>&#10133;</span><label for="remark">Add remark</label><input id="remark" placeholder="Default: MB transfer" autocomplete="off"></div>
+      <div class="err" id="err"></div>
+      <button class="btn" type="submit" style="margin-top:4px">Continue</button>
+      <div class="tab"><button type="button" class="on" id="tabRecent">Recent Transfers</button><button type="button" id="tabBene">Beneficiaries</button></div>
+      <div id="ctList"></div>
+    </form>
+  </section>
+
+  <!-- SCREEN 2: receipt -->
+  <section id="receiptScreen" class="hidden">
+    <div class="top"><div class="curve"></div></div>
+    <svg class="shield" viewBox="0 0 24 26" fill="#fff"><path d="M12 1 2 5v7c0 6 4.2 11 10 13 5.8-2 10-7 10-13V5z"/><path d="m7.5 12.5 3.2 3.2 6-6.4" stroke="#7B10C4" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="thank">Thank you</div><div class="succ">Success</div>
+    <div class="ring"><div class="inner">
+      <svg viewBox="0 0 110 90" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M8 48 38 78 102 10"/></svg>
+    </div></div>
+
+    <div class="done">Transaction Completed Successfully!</div>
+    <div class="card">
+      <h4>Transaction Summary:</h4>
+      <div id="summary"></div>
+      <canvas class="qr" id="qr" width="230" height="240"></canvas>
+      <div class="brand"><div class="logo" data-b="logo">DB</div><div><b data-b="name">Demo Bank</b><span data-b="rtag">Educational demo only</span></div></div>
+    </div>
+
+    <button class="act" data-stop style="left:calc(var(--u)*82)" type="button"><svg viewBox="0 0 24 24"><path fill="#000" d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><text x="12" y="17" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">$</text></svg>Receipt</button>
+    <button class="act" data-stop style="left:calc(var(--u)*277)" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><circle cx="12" cy="12" r="3.2"/></svg>Screenshot</button>
+    <button class="act" data-stop id="shareBtn" style="left:calc(var(--u)*510)" type="button"><svg viewBox="0 0 24 24" fill="#000"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8 11l8-5M8 13l8 5" stroke="#000" stroke-width="2"/></svg>Share</button>
+    <button class="close" id="closeBtn" data-stop type="button">Close</button>
+  </section>
+  <div class="stamp" id="stamp" data-b="stamp">PAID</div>
+  <div class="toast" id="toast"></div>
+</div>
+<div class="modal" id="modal"></div>
+<div class="modal" id="sheet"></div>
+<div class="scanner" id="scanner"><video id="scanVid" playsinline muted></video><div class="sf"></div><div id="scanMsg"></div><button class="btn" id="scanCancel" type="button">Cancel</button></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const rnd4 = () => String(Math.floor(1000 + Math.random()*9000));
+const rndId = () => 'FT' + Array.from({length:9}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*34)]).join('');
+
+function fmtDate(d) {
+  const day = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  const time = d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true});
+  return `${day} ${time}`;
+}
+
+// Decorative QR-style pattern (NOT a scannable code), seeded by the transaction id
+function drawQR(seed) {
+  const c = $('qr'), g = c.getContext('2d'), n = 25, sx = c.width / n, sy = c.height / n;
+  let h = 0; for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const rand = () => (h = (h * 1664525 + 1013904223) >>> 0) / 4294967296;
+  g.clearRect(0,0,c.width,c.height); g.fillStyle = '#000';
+  const inFinder = (x,y) => (x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9);
+  for (let y=0;y<n;y++) for (let x=0;x<n;x++)
+    if (!inFinder(x,y) && rand() > 0.52) g.fillRect(x*sx, y*sy, sx+.5, sy+.5);
+  [[0,0],[n-7,0],[0,n-7]].forEach(([fx,fy]) => {
+    g.fillStyle='#000'; g.fillRect(fx*sx,fy*sy,7*sx,7*sy);
+    g.fillStyle='#fff'; g.fillRect((fx+1)*sx,(fy+1)*sy,5*sx,5*sy);
+    g.fillStyle='#000'; g.fillRect((fx+2)*sx,(fy+2)*sy,3*sx,3*sy);
+  });
+}
+
+function fitReceipt() {
+  const r = $('receiptScreen'), ph = $('phone');
+  if (r.classList.contains('hidden')) {
+    ph.classList.remove('fit'); ph.style.width = ph.style.height = ''; ph.style.removeProperty('--u'); return;
+  }
+  const k = Math.min(window.innerWidth / 688, window.innerHeight / 1530);
+  ph.classList.add('fit');
+  ph.style.width = (688 * k) + 'px'; ph.style.height = (1530 * k) + 'px';
+  ph.style.setProperty('--u', k + 'px');
+  const sm = $('summary'); sm.style.fontSize = '';
+  let f = 30;
+  while (sm.scrollHeight > 410 * k && f > 20) { f -= 1; sm.style.fontSize = (f * k) + 'px'; sm.style.lineHeight = (f * 1.58 * k) + 'px'; }
+}
+window.addEventListener('resize', fitReceipt);
+
+function esc(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Tap anywhere on the receipt screen -> PAID stamp (buttons excluded)
+$('receiptScreen').addEventListener('click', e => {
+  if (e.target.closest('[data-stop]')) return;
+  const st = $('stamp');
+  st.classList.remove('show'); void st.offsetWidth; st.classList.add('show');
+});
+
+$('shareBtn').addEventListener('click', () => {
+  const text = $('summary').innerText + '\n(Demo receipt – not a real transaction)';
+  if (navigator.share) navigator.share({title:'Demo receipt', text}).catch(()=>{});
+  else navigator.clipboard?.writeText(text);
+});
+// ====== BRANDING: change the name, logo, slogans and stamp text here (used on every page and the receipt) ======
+const BRAND = {
+  name: 'Commercial Bank Of Ethiopia',
+  nameUp: 'Commercial Bank Of Ethiopia',
+  
+  logoImg: 'logo.png',
+  tagline: 'The bank you can always rely on!',
+  receiptTag: 'The bank you can always rely on!',
+  foot: '\u00a9 Commercial Bank Of Ethiopia',
+  stamp: 'PAID'
+};
+function applyBrand(){
+  document.querySelectorAll('[data-b]').forEach(e=>{ const k=e.dataset.b;
+    if(k==='logo') e.innerHTML=BRAND.logoImg?`<img src="${BRAND.logoImg}" alt="">`:BRAND.short;
+    else if(k==='tag') e.textContent=BRAND.tagline; else if(k==='rtag') e.textContent=BRAND.receiptTag; else e.textContent=BRAND[k]; });
+  document.title=BRAND.name;
+}
+// ====== storage ======
+const jget=(k,d)=>{ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } };
+const jset=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+// Fictional saved accounts
+const DEFAULT_ACCOUNTS=[
+  {no:'1000123450001',name:'Selam Tadesse Gebre'},{no:'1000123450002',name:'Dawit Haile Mekonnen'},
+  {no:'1000123450003',name:'Hana Girma Tesfaye'},{no:'1000123450004',name:'Yonas Bekele Alemu'},
+  {no:'1000123450005',name:'Meaza Worku Abate'},{no:'1000123450006',name:'Biruk Assefa Negash'}];
+const DEF_PREFS={lang:'English',remark:'MB Transfer',showBal:false,notifTx:true,notifPromo:false,autoLock:true};
+let user=jget('demoUser',null), accounts=jget('demoAccounts',null)||DEFAULT_ACCOUNTS, history=jget('demoTx',[]);
+if(user) user.prefs=Object.assign({},DEF_PREFS,user.prefs||{});
+if(user&&!user.acNo){ user.acNo='1000'+String(Math.floor(Math.random()*1e5)).padStart(5,'0')+user.last4; jset('demoUser',user); }
+const saveUser=()=>jset('demoUser',user), saveAcc=()=>jset('demoAccounts',accounts), saveTx=()=>jset('demoTx',history);
+const sha=async t=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('demo-salt:'+t)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+const b64=u=>btoa(String.fromCharCode(...u)), unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const mask=n=>'1********'+n.slice(-4);
+const rndRid=()=>'v2-'+Array.from({length:20},()=>'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*58)]).join('');
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const tstamp=ts=>{ const d=new Date(ts); let h=d.getHours(); const ap=h>=12?'PM':'AM'; h=h%12||12; return `${String(d.getDate()).padStart(2,'0')}-${MON[d.getMonth()]}-${String(d.getFullYear()).slice(2)} ${h}:${String(d.getMinutes()).padStart(2,'0')} ${ap}`; };
+const FEE=()=>{ const fee=0.15, vat=+(fee*0.15).toFixed(2), dr=+(fee*0.05).toFixed(2); return {fee,vat,dr}; };
+function seedHistory(){
+  const n=Date.now(), H=36e5, f=FEE();
+  history=[
+    {type:'debit',name:accounts[0].name,acNo:accounts[0].no,amount:290,ts:n-20*H},
+    {type:'debit',name:accounts[1].name,acNo:accounts[1].no,amount:50,ts:n-44*H},
+    {type:'credit',name:'Marta Lemma Desta',acNo:'1000123459999',amount:1000,ts:n-60*H},
+    {type:'debit',name:accounts[2].name,acNo:accounts[2].no,amount:120,ts:n-70*H}
+  ].map(t=>Object.assign({tid:rndId(),rid:rndRid(),remark:'MB Transfer',sample:true,sender:user.name,sAc:user.last4},f,t));
+  history.forEach(t=>t.total=+(t.amount+t.fee+t.vat+t.dr).toFixed(2)); saveTx();
+}
+
+// ====== navigation / shared UI ======
+const SCREENS=['lockScreen','homeScreen','txScreen','settingsScreen','transferScreen','receiptScreen'];
+let cur='lockScreen', showBal=false, receiptReturn='homeScreen';
+function show(id){ cur=id; SCREENS.forEach(s=>$(s).classList.toggle('hidden',s!==id)); window.scrollTo(0,0); fitReceipt(); if(user&&id!=='lockScreen'){ refreshAll(); if(id==='txScreen') renderTx(); if(id==='settingsScreen') refreshSettings(); } bump(); }
+let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
+const CARD=()=>`<div class="acctCard"><div class="cardTop"><div class="mini" data-b="logo">DB</div><div><b data-b="name">Demo Bank</b><span data-b="tag">Banking made simple</span></div></div><div class="bal"><span class="js-bal">******</span><em>ETB</em><button class="js-eye" type="button" aria-label="Show balance">&#128065;</button></div><div class="acLine"><span class="js-ac"></span><button class="cp js-copy" type="button" aria-label="Copy account number"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="3" width="12" height="16" rx="2"/><path d="M4 7v13a2 2 0 0 0 2 2h9"/></svg></button></div><div class="dt js-dt"></div></div>`;
+const NAV=a=>`<div class="nav"><button data-go="homeScreen" class="${a==='h'?'on':''}" type="button"><span>&#8962;</span><i style="font-style:normal" data-i="home">Home</i></button><button data-go="txScreen" class="${a==='t'?'on':''}" type="button"><span>&#127963;</span><i style="font-style:normal" data-i="tx">Transactions</i></button><button data-go="settingsScreen" class="${a==='s'?'on':''}" type="button"><span>&#9881;</span><i style="font-style:normal" data-i="settings">Settings</i></button></div>`;
+document.querySelectorAll('.cardSlot').forEach(e=>e.innerHTML=CARD());
+document.querySelectorAll('.navSlot').forEach(e=>e.innerHTML=NAV(e.dataset.a));
+applyBrand();
+const I18N={'\u12A0\u121B\u122D\u129B':{home:'\u1218\u1290\u123B',tx:'\u130D\u1265\u12E8\u1273',settings:'\u1245\u1295\u1265\u122E\u127D',hello:'\u1230\u120B\u121D,',transfer:'\u121B\u1235\u1270\u120B\u1208\u134D',welcome:'\u12A5\u1295\u12AB\u1295 \u1260\u12F0\u1205\u1293 \u1270\u1218\u1208\u1231'}};
+function applyLang(){ const lg=(user&&user.prefs.lang)||'English', L=I18N[lg]||{};
+  document.querySelectorAll('[data-i]').forEach(e=>{ if(!e.dataset.o) e.dataset.o=e.textContent; e.textContent=L[e.dataset.i]||e.dataset.o; });
+  document.querySelectorAll('.js-lang').forEach(e=>e.textContent=lg+' \u25BE'); }
+function refreshAll(){
+  const d=new Date(), dt=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' \u00b7 '+d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.querySelectorAll('.js-name').forEach(e=>e.textContent=user.name.split(' ')[0]);
+  document.querySelectorAll('.js-ac').forEach(e=>e.textContent='Savings Ac 1 **** '+user.last4);
+  document.querySelectorAll('.js-dt').forEach(e=>e.textContent=dt);
+  document.querySelectorAll('.js-bal').forEach(e=>e.textContent=showBal?fmt(user.balance):'******');
+  applyLang();
+  if(cur === 'transferScreen') renderFromBalance();
+}
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); }catch(e){ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); try{ document.execCommand('copy'); }catch(x){} a.remove(); } }
+document.addEventListener('click',e=>{
+  if(e.target.closest('.js-copy')){ copyText(user.acNo); return toast('Account number copied'); }
+  if(e.target.closest('[data-toast]')) return toast('Not available in this demo');
+  const g=e.target.closest('[data-go]'); if(g) return show(g.dataset.go);
+  if(e.target.closest('.js-eye')){ showBal=!showBal; refreshAll(); if(cur==='transferScreen') renderFromBalance(); }
+});
+
+// ====== generic modal ======
+const fld=f=>f.type==='checkbox'?`<label class="chk"><input type="checkbox" id="m_${f.id}" ${f.val?'checked':''}><span>${f.label}</span></label>`
+  :f.type==='select'?`<label class="fl">${f.label}</label><select id="m_${f.id}">${f.opts.map(o=>`<option ${o===f.val?'selected':''}>${o}</option>`).join('')}</select>`
+  :`<label class="fl">${f.label}</label><input id="m_${f.id}" type="${f.type||'text'}" ${f.num?'inputmode="numeric"':''} ${f.max?`maxlength="${f.max}"`:''} placeholder="${f.ph||''}" value="${esc(f.val||'')}" autocomplete="off">`;
+const closeModal=()=>$('modal').classList.remove('on');
+function openModal(title,fields,ok,cb,note){
+  $('modal').innerHTML=`<div class="msheet"><h3>${title}</h3>${note?`<p>${note}</p>`:''}${fields.map(fld).join('')}<div class="err" id="mErr"></div>${ok?`<button class="btn" id="mOk" type="button" style="margin-top:6px">${ok}</button>`:''}<button class="link" id="mCancel" type="button">${ok?'Cancel':'Close'}</button></div>`;
+  $('modal').classList.add('on'); $('mCancel').onclick=closeModal;
+  if(ok) $('mOk').onclick=async()=>{ const v={}; fields.forEach(f=>{ const el=$('m_'+f.id); v[f.id]=f.type==='checkbox'?el.checked:el.value.trim(); }); const r=await cb(v); if(r) $('mErr').textContent=r; else closeModal(); };
+}
+$('modal').addEventListener('click',e=>{ if(e.target===$('modal')) closeModal(); });
+
+// ====== lock screen: PIN keypad + biometrics ======
+let pinBuf='';
+$('kg').innerHTML='123456789x0v'.split('').map(c=>`<button type="button" data-k="${c}"${c==='v'?' id="kpOk"':''}>${c==='x'?'&#9003;':c==='v'?'&#10003;':c}</button>`).join('');
+function renderPin(){ $('pinTxt').innerHTML=pinBuf?'\u2022'.repeat(pinBuf.length)+'<i class="caret"></i>':'<span class="ph">PIN</span>'; $('kpOk').classList.toggle('rdy',pinBuf.length===4); }
+function openKp(){ $('kp').classList.add('on'); $('lockScreen').classList.add('lockOpen'); $('pinField').classList.add('act'); }
+function closeKp(){ $('kp').classList.remove('on'); $('lockScreen').classList.remove('lockOpen'); $('pinField').classList.remove('act'); }
+function lockInit(){ pinBuf=''; $('pinErr').textContent=''; renderPin(); closeKp(); if(!user||!user.pin) $('setupSheet').classList.remove('hidden'); applyLang(); }
+$('pinField').addEventListener('click',openKp);
+document.querySelector('.lockMid').addEventListener('click',e=>{ if(!e.target.closest('#pinField')) closeKp(); });
+$('kg').addEventListener('click',e=>{ const k=e.target.closest('button')?.dataset.k; if(!k) return;
+  if(k==='x') pinBuf=pinBuf.slice(0,-1); else if(k==='v') return tryLogin(); else if(pinBuf.length<4) pinBuf+=k;
+  $('pinErr').textContent=''; renderPin(); });
+async function tryLogin(){
+  if(!user||!user.pin) return $('setupSheet').classList.remove('hidden');
+  if(pinBuf.length<4) return toast('Enter your 4-digit PIN');
+  if((await sha(pinBuf))===user.pin) return unlock();
+  $('pinErr').textContent='Incorrect PIN, try again'; $('pinField').classList.add('shake'); setTimeout(()=>$('pinField').classList.remove('shake'),400); pinBuf=''; renderPin();
+}
+$('loginBtn').addEventListener('click',()=>{ if(!pinBuf&&user&&user.pin){ openKp(); toast('Enter your PIN'); } else tryLogin(); });
+function unlock(){ pinBuf=''; closeKp(); showBal=user.prefs.showBal; show('homeScreen'); goFS(); }
+function doLock(msg){ closeModal(); $('sheet').classList.remove('on'); show('lockScreen'); lockInit(); if(msg) toast(msg); }
+async function bioRegister(){
+  if(!window.PublicKeyCredential) throw new Error('unsupported');
+  const c=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'Demo Bank'},
+    user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'demo-user',displayName:user.name},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+    authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},timeout:60000}});
+  user.cred=b64(new Uint8Array(c.rawId)); saveUser();
+}
+$('bioBtn').addEventListener('click',async()=>{
+  if(!user||!user.pin) return $('setupSheet').classList.remove('hidden');
+  if(!user.cred) return toast('Turn on Biometric Login in Settings first (log in with PIN once)');
+  try{ await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:unb64(user.cred)}],userVerification:'required',timeout:60000}}); unlock(); }
+  catch(e){ toast('Fingerprint check failed. Use your PIN.'); }
+});
+$('setupBtn').addEventListener('click',async()=>{
+  const n=$('setupName').value.trim(), p=$('setupPin').value, p2=$('setupPin2').value;
+  if(n.length<2) return $('setupErr').textContent='Enter the account holder name.';
+  if(!/^\d{4}$/.test(p)) return $('setupErr').textContent='PIN must be exactly 4 digits.';
+  if(p!==p2) return $('setupErr').textContent='PINs do not match.';
+  const ac='1000'+String(Math.floor(Math.random()*1e5)).padStart(5,'0')+rnd4(); user={name:n,pin:await sha(p),acNo:ac,last4:ac.slice(-4),balance:50000,prefs:Object.assign({},DEF_PREFS)}; saveUser(); seedHistory();
+  $('setupSheet').classList.add('hidden'); $('setupErr').textContent='';
+  if(window.PublicKeyCredential && confirm('Enable fingerprint / face unlock on this device now?')){ try{ await bioRegister(); toast('Biometric login enabled'); }catch(e){ toast('Biometrics need HTTPS and a saved fingerprint on your phone'); } }
+  unlock();
+});
+$('forgot').addEventListener('click',()=>{
+  if(!user||!user.pin) return $('setupSheet').classList.remove('hidden');
+  if(!user.pass){ if(confirm('No passphrase was set. Reset the demo profile? This erases the saved PIN, accounts and transactions.')){ try{ localStorage.clear(); }catch(e){} location.reload(); } return; }
+  openModal('Reset PIN',[{id:'pp',label:'Passphrase',type:'password'},{id:'np',label:'New 4-digit PIN',type:'password',num:true,max:4}],'Reset PIN',async v=>{
+    if((await sha('pp:'+v.pp))!==user.pass) return 'Wrong passphrase.'; if(!/^\d{4}$/.test(v.np)) return 'PIN must be 4 digits.';
+    user.pin=await sha(v.np); saveUser(); toast('PIN reset. Log in with your new PIN.'); });
+});
+
+// ====== transfer ======
+let rcv=null;
+function lookup(){
+  const v=$('racct').value.replace(/\D/g,''); $('racct').value=v; rcv=accounts.find(a=>a.no===v)||null; const n=$('nmLine');
+  if(rcv){ n.className='nmLine'; n.innerHTML='Name <b>'+esc(rcv.name)+'</b>'; }
+  else if(v.length===13){ n.className='nmLine bad'; n.textContent='Account not found. Save it with the person button.'; }
+  else { n.className='nmLine hid'; n.textContent=''; }
+}
+const recentList=()=>{ const seen=new Set(), out=[]; [...history].sort((a,b)=>b.ts-a.ts).forEach(t=>{ if(t.type==='debit'&&!seen.has(t.acNo)){ seen.add(t.acNo); out.push({no:t.acNo,name:t.name}); } }); return out.slice(0,6); };
+let ctTab='recent';
+function renderContacts(tab){ ctTab=tab||ctTab; $('tabRecent').classList.toggle('on',ctTab==='recent'); $('tabBene').classList.toggle('on',ctTab==='bene');
+  const list=ctTab==='recent'?recentList():accounts;
+  $('ctList').innerHTML=list.map(c=>`<div class="ct" data-no="${c.no}"><i>${esc(c.name.split(' ').map(w=>w[0]).slice(0,2).join(''))}</i><div>${esc(c.name)}<small>${mask(c.no)}</small></div>${ctTab==='bene'?`<u data-del="${c.no}">&#128465;</u>`:''}<b>&#10095;</b></div>`).join('')||'<p class="none">Nothing saved yet</p>'; }
+$('tabRecent').addEventListener('click',()=>renderContacts('recent')); $('tabBene').addEventListener('click',()=>renderContacts('bene'));
+$('ctList').addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]'); if(del){ e.stopPropagation(); if(confirm('Remove this saved account?')){ accounts=accounts.filter(a=>a.no!==del.dataset.del); saveAcc(); renderContacts(); lookup(); } return; }
+  const r=e.target.closest('.ct'); if(!r) return; $('racct').value=r.dataset.no; lookup(); $('amount').focus(); });
+$('racct').addEventListener('input',lookup);
+
+function renderFromBalance() {
+  const hidden = !showBal;
+  const fromBal = $('fromBal');
+  fromBal.innerHTML = `
+    <span>${showBal ? fmt(user.balance) + ' ETB' : '******'}</span>
+    <button class="eyeToggle js-eye" type="button" aria-label="Toggle balance">&#128065;</button>
+  `;
+}
+
+function openSaveAcct(pre){ openModal('Save account',[{id:'no',label:'Account number (13 digits)',num:true,max:13,ph:'1000XXXXXXXXX',val:pre||''},{id:'nm',label:'Account holder name',ph:'Full name'}],'Save',v=>{
+  if(!/^\d{13}$/.test(v.no)) return 'Account number must be 13 digits.'; if(v.nm.length<3) return 'Enter the full name.';
+  const ex=accounts.find(a=>a.no===v.no); if(ex) ex.name=v.nm; else accounts.push({no:v.no,name:v.nm}); saveAcc();
+  $('racct').value=v.no; lookup(); renderContacts(); toast('Account saved'); },'Only use made-up account numbers and names (or people who agreed). The name is shown automatically next time.'); }
+$('addAcct').addEventListener('click',()=>openSaveAcct());
+function openTransferTo(no){ $('goTransfer').click(); $('racct').value=no; lookup(); if(!rcv) setTimeout(()=>openSaveAcct(no),250); else $('amount').focus(); }
+$('goTransfer').addEventListener('click',()=>{ $('fromAc').textContent=`${user.name} · Ac 1********${user.last4}`; renderFromBalance(); $('form').reset(); $('err').textContent=''; $('remark').placeholder='Default: '+user.prefs.remark; rcv=null; lookup(); renderContacts('recent'); show('transferScreen'); });
+$('backHome').addEventListener('click',()=>show('homeScreen'));
+$('form').addEventListener('submit',e=>{
+  e.preventDefault(); const amount=parseFloat($('amount').value), remark=$('remark').value.trim()||user.prefs.remark, f=FEE();
+  if(!rcv) return $('err').textContent='Enter a saved receiver account number.';
+  if(!(amount>0)) return $('err').textContent='Enter an amount greater than 0.';
+  if(amount>1e7) return $('err').textContent='Amount is too large for this demo.';
+  const total=+(amount+f.fee+f.vat+f.dr).toFixed(2);
+  if(total>user.balance) return $('err').textContent='Insufficient balance (demo balance: '+fmt(user.balance)+' ETB).';
+  $('err').textContent=''; const ov=document.createElement('div'); ov.className='proc'; ov.textContent='Processing...'; document.body.appendChild(ov);
+  setTimeout(()=>{ ov.remove(); user.balance=+(user.balance-total).toFixed(2); saveUser();
+    const t=Object.assign({type:'debit',tid:rndId(),rid:rndRid(),name:rcv.name,acNo:rcv.no,amount,ts:Date.now(),remark,total,sender:user.name,sAc:user.last4},f);
+    history.unshift(t); saveTx(); showReceipt(t,'homeScreen'); if(user.prefs.notifTx) toast('Transaction alert: ETB '+fmt(amount)+' sent to '+rcv.name.split(' ')[0]); },1000);
+});
+
+// ====== receive + QR scanner ======
+$('goReceive').addEventListener('click',()=>{
+  openModal('Receive money',[],null,null,'Share this account number to get paid:<br><b style="font-size:18px;letter-spacing:1px">'+user.acNo+'</b><br><button class="btn" id="rcCopy" type="button">Copy account number</button>');
+  $('rcCopy').onclick=()=>{ copyText(user.acNo); toast('Account number copied'); };
+});
+let scanStream=null, scanRAF=0, scanOn=false;
+async function startScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.isSecureContext) return toast('The camera needs HTTPS. Open the app from your GitHub Pages link.');
+  $('scanner').classList.add('on'); $('scanMsg').textContent='Point the camera at a QR code';
+  try{ scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}); }
+  catch(e){ stopScan(); return toast('Camera permission was denied'); }
+  const v=$('scanVid'); v.srcObject=scanStream; try{ await v.play(); }catch(e){} scanOn=true;
+  const det=('BarcodeDetector' in window)?new BarcodeDetector({formats:['qr_code']}):null;
+  if(!det&&!window.jsQR){ await new Promise(r=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js'; sc.onload=r; sc.onerror=r; document.head.appendChild(sc); }); }
+  const cv=document.createElement('canvas'), cx=cv.getContext('2d',{willReadFrequently:true});
+  const tick=async()=>{ if(!scanOn) return;
+    if(v.readyState>=2){ let txt=null;
+      try{ if(det){ const r=await det.detect(v); if(r.length) txt=r[0].rawValue; }
+        else if(window.jsQR){ cv.width=v.videoWidth; cv.height=v.videoHeight; cx.drawImage(v,0,0); const d=cx.getImageData(0,0,cv.width,cv.height); const r=jsQR(d.data,d.width,d.height); if(r) txt=r.data; } }catch(e){}
+      if(txt){ stopScan(); return handleScan(txt); } }
+    scanRAF=requestAnimationFrame(tick); };
+  tick();
+}
+function stopScan(){ scanOn=false; cancelAnimationFrame(scanRAF); if(scanStream) scanStream.getTracks().forEach(t=>t.stop()); scanStream=null; $('scanner').classList.remove('on'); }
+function handleScan(txt){ const m=String(txt).match(/\d{13}/); if(!m) return toast('That QR code has no 13-digit account number'); toast('QR scanned'); openTransferTo(m[0]); }
+$('scanBtn').addEventListener('click',startScan); $('scanCancel').addEventListener('click',stopScan);
+
+// ====== receipt ======
+function showReceipt(t,ret){
+  receiptReturn=ret;
+  $('summary').innerHTML=`ETB <b>${fmt(t.amount)}</b> has been debited from <b>${esc(t.sender||user.name)}</b> ETB-${t.sAc||user.last4} for <b>${esc(t.name)}</b> ETB-${t.acNo.slice(-4)} on <b>${fmtDate(new Date(t.ts))}</b> with transaction ID: <b>${t.tid}</b>. Reason: ${esc(t.remark)}... Total Amount Debited: ETB ${fmt(t.total)} with Service Charge of ETB${t.fee.toFixed(2)}, VAT (15%) of ETB${t.vat.toFixed(2)} and Disaster Recovery (5%) of ETB${t.dr.toFixed(2)}.`;
+  drawQR(t.tid); $('stamp').classList.remove('show'); show('receiptScreen');
+}
+$('closeBtn').addEventListener('click',()=>show(receiptReturn));
+
+// ====== transactions ======
+let txTab='all';
+const dayKey=ts=>{ const d=new Date(ts); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); };
+function dayLabel(ts){ const k=dayKey(ts), n=Date.now(); if(k===dayKey(n)) return 'Today'; if(k===dayKey(n-864e5)) return 'Yesterday'; const d=new Date(ts); return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}`; }
+function renderTx(){
+  const q=$('txQ').value.trim().toLowerCase();
+  document.querySelectorAll('.txTabs [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===txTab));
+  const list=[...history].filter(t=>(txTab==='all'||t.type===txTab)&&(!q||t.name.toLowerCase().includes(q))).sort((a,b)=>b.ts-a.ts);
+  let html='', last=0;
+  list.forEach(t=>{ const k=dayKey(t.ts);
+    if(k!==last){ last=k; const tot=list.filter(x=>dayKey(x.ts)===k&&x.type==='debit').reduce((m,x)=>m+x.amount,0); html+=`<div class="dh"><span>${dayLabel(t.ts).toUpperCase()}</span>${tot?`<em>Sent ${fmt(tot)} ETB</em>`:''}</div>`; }
+    html+=`<div class="tx" data-id="${t.tid}"><div class="ti ${t.type}">${t.type==='debit'?'&#8593;':'&#8595;'}</div><div class="tm"><b>${esc(t.name)}</b><small>${tstamp(t.ts)}</small></div><div class="ta ${t.type}"><b>${t.type==='debit'?'-':'+'}${fmt(t.amount)} ETB</b><em>${t.topup?'TOP UP':'ACCOUNT TO ACCOUNT'}</em></div></div>`; });
+  $('txList').innerHTML=html||'<p class="none">No transactions yet</p>';
+}
+document.querySelectorAll('.txTabs [data-tab]').forEach(b=>b.addEventListener('click',()=>{ txTab=b.dataset.tab; renderTx(); }));
+$('txSearchBtn').addEventListener('click',()=>{ $('txQ').classList.toggle('hid'); if(!$('txQ').classList.contains('hid')) $('txQ').focus(); else { $('txQ').value=''; renderTx(); } });
+$('txQ').addEventListener('input',renderTx);
+$('txList').addEventListener('click',e=>{ const r=e.target.closest('.tx'); if(!r) return; const t=history.find(x=>x.tid===r.dataset.id); if(t) openDetail(t); });
+function openDetail(t){
+  const deb=t.type==='debit', row=(l,v,c)=>`<div class="row"><span>${l}</span><b>${v}${c?`<button data-copy="${v}" type="button">&#128203;</button>`:''}</b></div>`;
+  $('sheet').innerHTML=`<div class="msheet"><div class="mh"><span style="flex:1">TRANSACTION DETAIL</span><button class="circ l" data-close type="button">&#10005;</button></div><div class="chip">&#10004; Completed</div><div class="big">${deb?'-':'+'}${fmt(t.amount)} ETB</div><div class="sub">${deb?'to':'from'} ${esc(t.name)}</div>${row('Date &amp; Time',tstamp(t.ts))}${row('Type','Account to Account')}${row('Transaction ID',t.tid,1)}${row('Receipt ID',t.rid,1)}${row('Remark',esc(t.remark))}${deb?'<button class="btn" id="viewRcpt" type="button">VIEW RECEIPT</button>':''}</div>`;
+  $('sheet').classList.add('on'); if(deb) $('viewRcpt').onclick=()=>{ $('sheet').classList.remove('on'); showReceipt(t,'txScreen'); };
+}
+$('sheet').addEventListener('click',e=>{ if(e.target===$('sheet')||e.target.closest('[data-close]')) $('sheet').classList.remove('on'); const c=e.target.closest('[data-copy]'); if(c){ try{ navigator.clipboard.writeText(c.dataset.copy); toast('Copied'); }catch(x){} } });
+
+// ====== settings ======
+function refreshSettings(){ $('topSub').textContent='Balance: '+fmt(user.balance)+' ETB'; $('langSub').textContent=user.prefs.lang; $('bioSub').textContent=user.cred?'Enabled':'Off'; }
+document.querySelector('#settingsScreen').addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]')?.dataset.act; if(!a) return;
+  if(a==='lang') openModal('Language',[{id:'l',label:'App language',type:'select',opts:['English','\u12A0\u121B\u122D\u129B'],val:user.prefs.lang}],'Save',v=>{ user.prefs.lang=v.l; saveUser(); refreshAll(); refreshSettings(); },'Menus and titles switch language. Other screens stay in English in this demo.');
+  if(a==='acct') openModal('Account Preferences',[{id:'n',label:'Account holder name',val:user.name},{id:'c',label:'Account number (13 digits)',num:true,max:13,val:user.acNo},{id:'r',label:'Default remark',val:user.prefs.remark}],'Save',v=>{ if(v.n.length<2) return 'Enter a name.'; if(!/^\d{13}$/.test(v.c)) return 'Account number must be 13 digits.'; user.name=v.n; user.acNo=v.c; user.last4=v.c.slice(-4); user.prefs.remark=v.r||'MB Transfer'; saveUser(); refreshAll(); toast('Saved'); },'The account number is stored only on this phone.');
+  if(a==='notif') openModal('Notification Preferences',[{id:'t',label:'Transaction alerts',type:'checkbox',val:user.prefs.notifTx},{id:'p',label:'Promotions and offers',type:'checkbox',val:user.prefs.notifPromo}],'Save',v=>{ user.prefs.notifTx=v.t; user.prefs.notifPromo=v.p; saveUser(); toast('Saved'); });
+  if(a==='serv') openModal('Service Preferences',[{id:'b',label:'Show balance after login',type:'checkbox',val:user.prefs.showBal},{id:'l',label:'Auto-lock after 2 minutes idle',type:'checkbox',val:user.prefs.autoLock}],'Save',v=>{ user.prefs.showBal=v.b; user.prefs.autoLock=v.l; saveUser(); bump(); toast('Saved'); });
+  if(a==='bio') openModal('Biometric Login',[{id:'e',label:'Use fingerprint / face to log in',type:'checkbox',val:!!user.cred}],'Save',async v=>{
+    if(v.e&&!user.cred){ try{ await bioRegister(); }catch(x){ return !window.isSecureContext?'Biometrics need a secure (HTTPS) page. Open your GitHub Pages link, not the file.':(x&&x.name==='NotAllowedError'?'Cancelled, or no fingerprint/screen lock is saved on this phone. Add one in phone Settings > Security, then try again.':'This browser or phone cannot use biometrics here.'); } }
+    if(!v.e){ user.cred=null; saveUser(); } refreshSettings(); toast(v.e?'Biometric login enabled':'Biometric login off'); },'Your phone will ask for your fingerprint or face. The app never sees your fingerprint, only a yes or no from your device.');
+  if(a==='pin') openModal('Change PIN',[{id:'o',label:'Current PIN',type:'password',num:true,max:4},{id:'n',label:'New 4-digit PIN',type:'password',num:true,max:4},{id:'c',label:'Confirm new PIN',type:'password',num:true,max:4}],'Change PIN',async v=>{
+    if((await sha(v.o))!==user.pin) return 'Current PIN is wrong.'; if(!/^\d{4}$/.test(v.n)) return 'New PIN must be 4 digits.'; if(v.n!==v.c) return 'PINs do not match.';
+    user.pin=await sha(v.n); saveUser(); toast('PIN changed'); });
+  if(a==='pass') openModal('Change Passphrase',[{id:'o',label:'Current PIN',type:'password',num:true,max:4},{id:'p',label:'New passphrase (min 6 characters)',type:'password'}],'Save',async v=>{
+    if((await sha(v.o))!==user.pin) return 'Current PIN is wrong.'; if(v.p.length<6) return 'Passphrase is too short.';
+    user.pass=await sha('pp:'+v.p); saveUser(); toast('Passphrase saved'); },'Use it on the login screen under "Forgot PIN?" to reset your PIN.');
+  if(a==='topup') openModal('Top up balance',[{id:'a',label:'Amount (ETB)',num:true,max:7,ph:'e.g. 5000'}],'Top up',v=>{ const n=parseFloat(v.a); if(!(n>0)||n>1e6) return 'Enter an amount up to 1,000,000.'; user.balance=+(user.balance+n).toFixed(2); history.unshift({type:'credit',tid:rndId(),rid:rndRid(),name:'Balance top-up (demo)',acNo:user.acNo,amount:n,ts:Date.now(),remark:'Demo top-up',fee:0,vat:0,dr:0,total:n,topup:true}); saveUser(); saveTx(); refreshSettings(); toast('ETB '+fmt(n)+' added to your demo balance'); },'Adds practice money to your demo balance. It never touches a real account.');
+  if(a==='out'&&confirm('Log out?')) doLock();
+  if(a==='priv') openModal('Privacy Policy',[],null,null,'This is a student demo. Everything is stored only on this device in your browser (PIN as a hash, accounts, transactions). Nothing is sent to a server.');
+  if(a==='terms') openModal('Terms and Tariffs',[],null,null,'Demo tariff: service charge ETB 0.15 per transfer, plus 15% VAT and 5% disaster recovery levy on the charge. No real money is ever moved.');
+});
+
+// ====== idle lock + full screen + startup ======
+let idleT; function bump(){ clearTimeout(idleT); if(user&&user.prefs.autoLock&&cur!=='lockScreen') idleT=setTimeout(()=>doLock('Locked due to inactivity'),120000); }
+['pointerdown','keydown','scroll'].forEach(ev=>addEventListener(ev,bump,{passive:true}));
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+function goFS(){ const el=document.documentElement; if(standalone()||document.fullscreenElement||!el.requestFullscreen) return; el.requestFullscreen().catch(()=>{}); }
+document.addEventListener('click',()=>{ if(innerWidth<700) goFS(); },{once:true});
+document.addEventListener('fullscreenchange',fitReceipt);
+if('serviceWorker' in navigator && location.protocol.indexOf('http')===0) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(user&&!history.length) seedHistory();
+lockInit();
+</script>
+</body>
+</html>
