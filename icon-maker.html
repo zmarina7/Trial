@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App icon maker</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:420px;margin:0 auto;padding:20px;color:#222}
+ h1{font-size:20px} label{display:block;margin:14px 0 6px;font-size:14px;color:#556}
+ input[type=file],input[type=range],select{width:100%} input[type=color]{width:60px;height:36px;border:none;padding:0}
+ canvas{width:160px;height:160px;border:1px solid #ddd;border-radius:24px;display:block;margin:16px auto;background:#eee}
+ button{width:100%;padding:13px;border:none;border-radius:26px;background:#7B10C4;color:#fff;font-size:16px;font-weight:600;margin-top:10px}
+ p{font-size:13px;color:#667;line-height:1.5}
+</style></head><body>
+<h1>Make your app icon</h1>
+<p>Pick your photo or logo. This page makes the two icon files your app needs: <b>icon-192.png</b> and <b>icon-512.png</b>. Nothing is uploaded; it all happens on your phone.</p>
+<label>1. Choose a photo / logo</label><input type="file" id="f" accept="image/*">
+<label>2. Space around it: <span id="pv">12</span>%</label><input type="range" id="pad" min="0" max="30" value="12">
+<label>3. Background colour (shows behind a transparent logo)</label><input type="color" id="bg" value="#7B10C4">
+<label>4. Shape</label><select id="shape"><option value="square">Square (Android rounds it for you)</option><option value="circle">Circle</option></select>
+<canvas id="c" width="512" height="512"></canvas>
+<button id="d192" type="button">Download icon-192.png</button>
+<button id="d512" type="button">Download icon-512.png</button>
+<p>Then replace the two old icon files in your GitHub repository with these, remove the old shortcut from your home screen and add it again.</p>
+<script>
+const $=id=>document.getElementById(id); let img=null;
+function draw(c,n){ const x=c.getContext('2d'); c.width=c.height=n; x.clearRect(0,0,n,n);
+  x.save(); if($('shape').value==='circle'){ x.beginPath(); x.arc(n/2,n/2,n/2,0,7); x.clip(); } x.fillStyle=$('bg').value; x.fillRect(0,0,n,n);
+  if(img){ const p=n*($('pad').value/100), a=n-2*p, r=Math.min(a/img.width,a/img.height), w=img.width*r, h=img.height*r; x.drawImage(img,(n-w)/2,(n-h)/2,w,h); } x.restore(); }
+const show=()=>{ $('pv').textContent=$('pad').value; draw($('c'),512); };
+['pad','bg','shape'].forEach(i=>$(i).addEventListener('input',show));
+$('f').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const u=URL.createObjectURL(f); const i=new Image(); i.onload=()=>{ img=i; show(); }; i.src=u; });
+function save(n){ const c=document.createElement('canvas'); draw(c,n); c.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='icon-'+n+'.png'; a.click(); },'image/png'); }
+$('d192').onclick=()=>save(192); $('d512').onclick=()=>save(512); show();
+</script></body></html>
