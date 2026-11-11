@@ -115,6 +115,40 @@
   .sf { position:absolute; top:50%; left:50%; width:240px; height:240px; transform:translate(-50%,-50%); border:3px solid #fff; border-radius:24px; box-shadow:0 0 0 9999px rgba(0,0,0,.5); }
   #scanMsg { position:relative; color:#fff; margin-bottom:14px; text-align:center; }
   .scanner .btn { position:relative; max-width:320px; background:#fff; color:#4a1a8a; }
+  
+  /* confirm-with-PIN sheet */
+  .dots { display:flex; gap:18px; justify-content:center; margin:12px 0 16px; }
+  .dots i { width:15px; height:15px; border-radius:50%; border:2px solid var(--purple); }
+  .dots i.f { background:var(--purple); }
+  .dots.shake { animation:shake .35s; }
+  .cfAmt { font-size:28px; font-weight:800; color:#1f2a3a; margin-top:10px; }
+  .cfTo { font-size:var(--fs-md); color:#445; margin-top:6px; }
+  .cfFee { font-size:var(--fs-sm); color:#889; margin:6px 0 14px; }
+  .cfMsg { text-align:center !important; margin:0 0 4px !important; font-size:var(--fs-sm) !important; }
+  .msheet .kg button { height:56px; font-size:22px; }
+  /* dark mode */
+  [data-theme=dark] { color-scheme:dark; }
+  [data-theme=dark] body { background:#08080c; }
+  [data-theme=dark] .phone { background:#101018; }
+  [data-theme=dark] .screen { background:linear-gradient(180deg,#14141d,#0e0e15); color:#e7e7ee; }
+  [data-theme=dark] .circ.l, [data-theme=dark] .lockTop .pill { background:#23232e; color:#cfd0dc; }
+  [data-theme=dark] .bankName { color:#c8c9d6; } [data-theme=dark] .welcome { color:#9ea0b2; } [data-theme=dark] .rule { background:#2c2c3a; }
+  [data-theme=dark] .pinField { background:#1d1d28; } [data-theme=dark] #pinTxt { color:#eee; } [data-theme=dark] #pinTxt .ph { color:#8a8ca0; }
+  [data-theme=dark] .kp { background:#181822; } [data-theme=dark] .kg button { background:#262633; color:#e8e8f0; } [data-theme=dark] .kg button[data-k=v] { background:#1f1f2b; }
+  [data-theme=dark] .small, [data-theme=dark] .foot { color:#8a8ca0; } [data-theme=dark] .link { color:#b9a7ff; }
+  [data-theme=dark] .tile { background:#1c1c27; color:#b9a7ff; } [data-theme=dark] .tile small { color:#8a8ca0; } [data-theme=dark] .tile.big b { color:#d8d6ff; }
+  [data-theme=dark] .qc, [data-theme=dark] .qmore { background:#1f1f2b; } [data-theme=dark] .quick em { color:#b9b6ff; }
+  [data-theme=dark] .tBody { background:#12121a; } [data-theme=dark] .field { background:#1d1d28; box-shadow:none; } [data-theme=dark] .field svg, [data-theme=dark] .remark svg { stroke:#9a9ab0; }
+  [data-theme=dark] .nmLine b, [data-theme=dark] .ct div { color:#e8e8f0; } [data-theme=dark] .nmLine { color:#9a9ab0; }
+  [data-theme=dark] .ct i { background:#2a2540; color:#c9b8ff; } [data-theme=dark] .tab, [data-theme=dark] .ct { border-color:#262633; } [data-theme=dark] .tab button { color:#b9a7ff; }
+  [data-theme=dark] .tx { background:#1b1b26; } [data-theme=dark] .tm b { color:#eee; } [data-theme=dark] .ti.debit { background:#3a1d22; } [data-theme=dark] .ti.credit { background:#173325; }
+  [data-theme=dark] .ta em { background:#2a2a3a; color:#aab; } [data-theme=dark] .dh, [data-theme=dark] .sTitle { color:#9aa0c8; }
+  [data-theme=dark] .sGroup { background:#1b1b26; } [data-theme=dark] .srow div { color:#eee; } [data-theme=dark] .si { background:#2a2540; } [data-theme=dark] .ver { color:#8a8ca0; } [data-theme=dark] .ver a { color:#ccd; }
+  [data-theme=dark] .nav { background:#16161f; border-color:#262633; } [data-theme=dark] .nav button { color:#b9a7ff; } [data-theme=dark] .nav button.on { background:#2b2a40; }
+  [data-theme=dark] .msheet, [data-theme=dark] .sheet { background:#181822; color:#e8e8f0; } [data-theme=dark] .msheet h3, [data-theme=dark] .big, [data-theme=dark] .cfAmt, [data-theme=dark] .sheet h2 { color:#f0f0f8; }
+  [data-theme=dark] .row b, [data-theme=dark] .cfTo { color:#eee; } [data-theme=dark] .row, [data-theme=dark] .sub, [data-theme=dark] .msheet p, [data-theme=dark] .fl { color:#9a9ab0; }
+  [data-theme=dark] .msheet input[type=text], [data-theme=dark] .msheet input[type=password], [data-theme=dark] .msheet select, [data-theme=dark] .sheet input, [data-theme=dark] .txQ { background:#1f1f2b; color:#eee; border-color:#33334a; }
+  [data-theme=dark] .chip { background:#173325; color:#7be0a8; } [data-theme=dark] .proc { background:rgba(16,16,24,.88); } [data-theme=dark] .circ.l { color:#ddd; }
 
   /* transfer */
   .tHead { background:var(--purple); color:#fff; padding:16px 16px 40px; display:flex; align-items:center; gap:18px; font-size:24px; font-weight:700; }
@@ -646,6 +680,39 @@ $('form').addEventListener('submit',e=>{
     history.unshift(t); saveTx(); showReceipt(t,'homeScreen'); if(user.prefs.notifTx) toast('Transaction alert: ETB '+fmt(amount)+' sent to '+rcv.name.split(' ')[0]); },1000);
 });
 
+// ====== confirm a transfer with the login PIN (or fingerprint) ======
+function bioVerify(){ return navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:unb64(user.cred)}],userVerification:'required',timeout:60000}}).then(()=>true,()=>false); }
+function confirmTransfer(info){
+  return new Promise(res=>{
+    let buf='', tries=0, done=false; const m=$('modal');
+    m.innerHTML=`<div class="msheet"><h3>Confirm transfer</h3><div class="cfAmt">ETB ${fmt(info.amount)}</div><div class="cfTo">to ${esc(info.name)} &middot; ${mask(info.no)}</div><div class="cfFee">Charges ETB ${fmt(info.charges)} &middot; Total ETB ${fmt(info.total)}</div><p class="cfMsg" id="cfMsg">Enter your PIN to confirm</p><div class="dots" id="cfDots"><i></i><i></i><i></i><i></i></div><div class="kg" id="cfKg">${'123456789_0x'.split('').map(c=>c==='_'?'<span></span>':`<button type="button" data-k="${c}">${c==='x'?'&#9003;':c}</button>`).join('')}</div>${user.cred?'<button class="link" id="cfBio" type="button">Use fingerprint instead</button>':''}<button class="link" id="cfCancel" type="button">Cancel</button></div>`;
+    m.classList.add('on');
+    const finish=ok=>{ if(done) return; done=true; m.onclick=null; closeModal(); res(ok); };
+    const paint=()=>[...$('cfDots').children].forEach((d,i)=>d.classList.toggle('f',i<buf.length));
+    $('cfKg').onclick=async e=>{ const k=e.target.closest('button')?.dataset.k; if(!k||done) return;
+      if(k==='x') buf=buf.slice(0,-1); else if(buf.length<4) buf+=k; paint();
+      if(buf.length===4){ if((await sha(buf))===user.pin) return finish(true);
+        tries++; buf=''; paint(); $('cfDots').classList.add('shake'); setTimeout(()=>{ const d=$('cfDots'); if(d) d.classList.remove('shake'); },400);
+        if(tries>=3){ finish(false); return doLock('Too many wrong PINs. App locked.'); } $('cfMsg').textContent='Wrong PIN. '+(3-tries)+(3-tries===1?' try left':' tries left'); } };
+    $('cfCancel').onclick=()=>finish(false); m.onclick=e=>{ if(e.target===m) finish(false); };
+    if(user.cred){ const run=async()=>{ if(await bioVerify()) finish(true); }; $('cfBio').onclick=run; run(); }
+  });
+}
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault(); const amount=parseFloat($('amount').value), remark=$('remark').value.trim()||user.prefs.remark, f=FEE();
+  if(!rcv) return $('err').textContent='Enter a saved receiver account number.';
+  if(!(amount>0)) return $('err').textContent='Enter an amount greater than 0.';
+  if(amount>1e7) return $('err').textContent='Amount is too large for this demo.';
+  const total=+(amount+f.fee+f.vat+f.dr).toFixed(2);
+  if(total>user.balance) return $('err').textContent='Insufficient balance (demo balance: '+fmt(user.balance)+' ETB).';
+  $('err').textContent=''; const tgt=rcv;
+  if(!(await confirmTransfer({amount,name:tgt.name,no:tgt.no,charges:+(f.fee+f.vat+f.dr).toFixed(2),total}))) return;
+  const ov=document.createElement('div'); ov.className='proc'; ov.textContent='Processing...'; document.body.appendChild(ov);
+  setTimeout(()=>{ ov.remove(); user.balance=+(user.balance-total).toFixed(2); saveUser();
+    const t=Object.assign({type:'debit',tid:rndId(),rid:rndRid(),name:tgt.name,acNo:tgt.no,amount,ts:Date.now(),remark,total,sender:user.name,sAc:user.last4},f);
+    history.unshift(t); saveTx(); showReceipt(t,'homeScreen'); if(user.prefs.notifTx) toast('Transaction alert: ETB '+fmt(amount)+' sent to '+tgt.name.split(' ')[0]); },1000);
+});
+
 // ====== receive + QR scanner ======
 $('goReceive').addEventListener('click',()=>{
   openModal('Receive money',[],null,null,'Share this account number to get paid:<br><b style="font-size:18px;letter-spacing:1px">'+user.acNo+'</b><br><button class="btn" id="rcCopy" type="button">Copy account number</button>');
@@ -707,11 +774,12 @@ function openDetail(t){
 $('sheet').addEventListener('click',e=>{ if(e.target===$('sheet')||e.target.closest('[data-close]')) $('sheet').classList.remove('on'); const c=e.target.closest('[data-copy]'); if(c){ try{ navigator.clipboard.writeText(c.dataset.copy); toast('Copied'); }catch(x){} } });
 
 // ====== settings ======
-function refreshSettings(){ $('topSub').textContent='Balance: '+fmt(user.balance)+' ETB'; $('langSub').textContent=user.prefs.lang; $('bioSub').textContent=user.cred?'Enabled':'Off'; }
+function refreshSettings(){ $('themeSub').textContent=user.prefs.theme.charAt(0).toUpperCase()+user.prefs.theme.slice(1); $('topSub').textContent='Balance: '+fmt(user.balance)+' ETB'; $('langSub').textContent=user.prefs.lang; $('bioSub').textContent=user.cred?'Enabled':'Off'; }
 document.querySelector('#settingsScreen').addEventListener('click',e=>{
   const a=e.target.closest('[data-act]')?.dataset.act; if(!a) return;
+  if(a==='theme') openModal('Appearance',[{id:'t',label:'Theme',type:'select',opts:['Light','Dark','System'],val:user.prefs.theme.charAt(0).toUpperCase()+user.prefs.theme.slice(1)}],'Save',v=>{ user.prefs.theme=v.t.toLowerCase(); saveUser(); applyTheme(); refreshSettings(); },'Dark mode is easier on the eyes at night. System follows your phone setting.');
   if(a==='lang') openModal('Language',[{id:'l',label:'App language',type:'select',opts:['English','\u12A0\u121B\u122D\u129B'],val:user.prefs.lang}],'Save',v=>{ user.prefs.lang=v.l; saveUser(); refreshAll(); refreshSettings(); },'Menus and titles switch language. Other screens stay in English in this demo.');
-  if(a==='acct') openModal('Account Preferences',[{id:'n',label:'Account holder name',val:user.name},{id:'c',label:'Account number (13 digits)',num:true,max:13,val:user.acNo},{id:'r',label:'Default remark',val:user.prefs.remark}],'Save',v=>{ if(v.n.length<2) return 'Enter a name.'; if(!/^\d{13}$/.test(v.c)) return 'Account number must be 13 digits.'; user.name=v.n; user.acNo=v.c; user.last4=v.c.slice(-4); user.prefs.remark=v.r||'MB Transfer'; saveUser(); refreshAll(); toast('Saved'); },'The account number is stored only on this phone.');
+  if(a==='acct') openModal('Account Preferences',[{id:'n',label:'Account holder name',val:user.name},{id:'t',label:'Account type label',val:user.prefs.acType,ph:'e.g. Savings Ac'},{id:'c',label:'Account number (13 digits)',num:true,max:13,val:user.acNo},{id:'r',label:'Default remark',val:user.prefs.remark}],'Save',v=>{ if(v.n.length<2) return 'Enter a name.'; if(!/^\d{13}$/.test(v.c)) return 'Account number must be 13 digits.'; user.name=v.n; user.prefs.acType=v.t||'Savings Ac'; user.acNo=v.c; user.last4=v.c.slice(-4); user.prefs.remark=v.r||'MB Transfer'; saveUser(); refreshAll(); toast('Saved'); },'The account number is stored only on this phone.');
   if(a==='notif') openModal('Notification Preferences',[{id:'t',label:'Transaction alerts',type:'checkbox',val:user.prefs.notifTx},{id:'p',label:'Promotions and offers',type:'checkbox',val:user.prefs.notifPromo}],'Save',v=>{ user.prefs.notifTx=v.t; user.prefs.notifPromo=v.p; saveUser(); toast('Saved'); });
   if(a==='serv') openModal('Service Preferences',[{id:'b',label:'Show balance after login',type:'checkbox',val:user.prefs.showBal},{id:'l',label:'Auto-lock after 2 minutes idle',type:'checkbox',val:user.prefs.autoLock}],'Save',v=>{ user.prefs.showBal=v.b; user.prefs.autoLock=v.l; saveUser(); bump(); toast('Saved'); });
   if(a==='bio') openModal('Biometric Login',[{id:'e',label:'Use fingerprint / face to log in',type:'checkbox',val:!!user.cred}],'Save',async v=>{
